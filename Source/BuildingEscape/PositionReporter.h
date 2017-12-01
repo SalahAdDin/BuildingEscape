@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Components/InputComponent.h"
 #include "PositionReporter.generated.h"
 
 
