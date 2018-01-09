@@ -22,7 +22,7 @@ void UGrabber::BeginPlay()
 	// ...
 
 	UE_LOG(LogTemp, Warning, TEXT("Grabber reporting for duty!"));
-	
+
 }
 
 
@@ -40,12 +40,26 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	);
 
 	// Log out to test
-	UE_LOG(
-		LogTemp, 
-		Warning, 
+	/*UE_LOG(
+		LogTemp,
+		Warning,
 		TEXT("Location: %s, Rotation: %s"),
 		*PlayerViewPointLocation.ToString(),
 		*PlayerViewPointRotation.ToString()
+	);*/
+
+	FVector LineTraceEnd = PlayerViewPointLocation + (PlayerViewPointRotation.Vector() * Reach);
+	
+	// Draw a red trace in the world for visualise
+	DrawDebugLine(
+		GetWorld(),
+	PlayerViewPointLocation,
+		LineTraceEnd,
+		FColor(255,0,0),
+		false,
+		0.f,
+		0.f,
+		10.f
 	);
 
 	// Ray-cast out to reach the distance
