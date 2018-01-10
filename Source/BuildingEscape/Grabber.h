@@ -6,8 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
-#include "Grabber.generated.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Grabber.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -31,4 +31,9 @@ private:
 	float Reach = 100.f;
 	
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;
+
+	UInputComponent* InputComponent = nullptr;
+
+	// Ray-cast and grab what's in reach
+	void Grab();
 };
