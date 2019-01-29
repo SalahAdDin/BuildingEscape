@@ -12,9 +12,5 @@
 UCLASS()
 class BUILDINGESCAPE_API ABuildingEscapeGameModeBase : public AGameModeBase
 {
-	GENERATED_BODY()
-	
-	
-	
-	
+	GENERATED_BODY()	
 };
