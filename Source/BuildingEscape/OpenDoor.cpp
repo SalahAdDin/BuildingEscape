@@ -3,6 +3,8 @@
 #include "OpenDoor.h"
 #include "Runtime/Engine/Classes/GameFramework/PlayerController.h"
 
+#define OUT
+
 
 // Sets default values for this component's properties
 UOpenDoor::UOpenDoor()
@@ -22,6 +24,20 @@ void UOpenDoor::BeginPlay()
 
 	Owner = GetOwner();
 	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
+}
+
+float UOpenDoor::GetTotalMassOfActorsOnPlate()
+{
+	float TotalMass = 0.f;
+
+	// Find all overlapping actors
+	TArray<AActor*> OverlappingActors;
+	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
+
+	// Iterate through them adding their masses
+
+
+	return TotalMass;
 }
 
 
@@ -45,7 +61,7 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 
 	// Poll the trigger of wolumen
 	// If the ActorThatOpens is in the volume
-	if (PressurePlate->IsOverlappingActor(ActorThatOpens))
+	if (GetTotalMassOfActorsOnPlate() > 50.f) // TODO make into a parameter
 	{
 		OpenDoor();
 		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
