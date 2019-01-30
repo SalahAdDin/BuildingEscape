@@ -35,11 +35,7 @@ void UGrabber::FindPhysicsHandleComponent()
 	// Look for attached physics handler
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 
-	if (PhysicsHandle)
-	{
-
-	}
-	else
+	if (PhysicsHandle == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s missing physics handle component"), *GetOwner()->GetName())
 	}
@@ -72,7 +68,7 @@ void UGrabber::Grab()
 
 	// LINE TRACE and see if we reach any actors with physics body collision channel set
 	auto HitResult = GetFirstPhysicsBodyInReach();
-	auto ComponentToGrab = HitResult.GetComponent();
+	auto ComponentToGrab = HitResult.GetComponent();	// gets the mesh in our case
 	auto ActorHit = HitResult.GetActor();
 
 	// If it hit something then attach a physics handle
@@ -81,9 +77,9 @@ void UGrabber::Grab()
 		// attach physics handle
 		PhysicsHandle->GrabComponentAtLocationWithRotation(
 			ComponentToGrab,
-			NAME_None,
-			ComponentToGrab->GetOwner()->GetActorLocation(),
-			ComponentToGrab->GetOwner()->GetActorRotation()
+			NAME_None,	// no bones needed
+			ActorHit->GetActorLocation(),
+			ActorHit->GetActorRotation()
 		);
 	}
 }
@@ -97,50 +93,37 @@ void UGrabber::Release()
 
 FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 {
-	// Get the player's view point this thick
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		PlayerViewPointLocation,
-		PlayerViewPointRotation
-	);
-
-	FVector LineTraceEnd = PlayerViewPointLocation + (PlayerViewPointRotation.Vector() * Reach);
-
-	// Draw a red trace in the world for visualise
-	DrawDebugLine(
-		GetWorld(),
-		PlayerViewPointLocation,
-		LineTraceEnd,
-		FColor(255, 0, 0),
-		false,
-		0.f,
-		0.f,
-		10.f
-	);
-
-	// Setup query parameters
+	/// Line-trace (AKA ray-cast) out to reach distance
+	FHitResult HitResult;
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
-
-	// Line-trace/Ray-cast out to reach the distance
-	FHitResult Hit;
+	FTwoVectors TracePoints = GetLineTracePoints();
+	
+	//with C++17
+	//auto [Start, End] = GetLineTracePoints();
 	GetWorld()->LineTraceSingleByObjectType(
-		OUT Hit,
-		PlayerViewPointLocation,
-		LineTraceEnd,
+		OUT HitResult,
+		TracePoints.v1, //Start
+		TracePoints.v2, //End
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParameters
 	);
+	
+	return HitResult;
+}
 
-	// See what we hit
-	AActor* ActorHit = Hit.GetActor();
+FTwoVectors UGrabber::GetLineTracePoints() const
+{
+	FVector StartLocation;
+	FRotator PlayerViewPointRotation;
 
-	if (ActorHit)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *(ActorHit->GetName()))
-	}
-
-	return Hit;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT StartLocation,
+		OUT PlayerViewPointRotation
+	);
+	
+	FVector EndLocation = StartLocation + PlayerViewPointRotation.Vector() * Reach;
+	
+	return FTwoVectors(StartLocation, EndLocation);
 }
 
 
@@ -149,21 +132,13 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// Get the player's view point this thick
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		PlayerViewPointLocation,
-		PlayerViewPointRotation
-	);
-
-	FVector LineTraceEnd = PlayerViewPointLocation + (PlayerViewPointRotation.Vector() * Reach);
+	if (!PhysicsHandle) { return; }
 
 	// if physics handle is attached
 	if (PhysicsHandle->GrabbedComponent)
 	{
 		// move the object that is being holded
-		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+		PhysicsHandle->SetTargetLocation(GetLineTracePoints().v2);
 	}
 }
 
