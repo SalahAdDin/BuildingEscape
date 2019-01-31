@@ -24,7 +24,9 @@ void UOpenDoor::BeginPlay()
 	Super::BeginPlay();
 
 	Owner = GetOwner();
-	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
+	if (!PressurePlate){
+		UE_LOG(LogTemp, Error, TEXT("%s missing pressure plate"), *GetOwner()->GetName())
+	}
 }
 
 float UOpenDoor::GetTotalMassOfActorsOnPlate()
@@ -33,6 +35,8 @@ float UOpenDoor::GetTotalMassOfActorsOnPlate()
 
 	// Find all overlapping actors
 	TArray<AActor*> OverlappingActors;
+
+	if (!PressurePlate) { return TotalMass; }
 	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
 
 	// Iterate through them adding their masses
@@ -66,7 +70,6 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// Poll the trigger of wolumen
-	// If the ActorThatOpens is in the volume
 	if (GetTotalMassOfActorsOnPlate() > 35.f) // TODO make into a parameter
 	{
 		OpenDoor();

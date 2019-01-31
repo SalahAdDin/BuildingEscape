@@ -74,6 +74,8 @@ void UGrabber::Grab()
 	// If it hit something then attach a physics handle
 	if (ActorHit)
 	{
+		if (!PhysicsHandle) { return; }
+
 		// attach physics handle
 		PhysicsHandle->GrabComponentAtLocationWithRotation(
 			ComponentToGrab,
@@ -86,8 +88,7 @@ void UGrabber::Grab()
 
 void UGrabber::Release()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Grab released"))
-
+	if (!PhysicsHandle) { return; }
 	PhysicsHandle->ReleaseComponent();
 }
 
