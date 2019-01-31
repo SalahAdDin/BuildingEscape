@@ -79,7 +79,7 @@ void UGrabber::Grab()
 		// attach physics handle
 		PhysicsHandle->GrabComponentAtLocationWithRotation(
 			ComponentToGrab,
-			NAME_None,	// no bones needed
+			NAME_None,	// no bones needed, non skeletal meshes
 			ActorHit->GetActorLocation(),
 			ActorHit->GetActorRotation()
 		);
